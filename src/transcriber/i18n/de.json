@@ -1,0 +1,16 @@
+{
+  "error.generic": "Fehler: {detail}",
+  "error.unknown_adapter": "Adapter „{name}“ ist für den Port „{port}“ nicht registriert. Bekannt: {available}",
+  "error.unsupported_language": "Zielsprache „{language}“ wird nicht unterstützt. Verfügbar: {available}",
+  "error.audio_decode": "Audiodatei kann nicht gelesen werden: {path} ({detail})",
+  "error.no_input": "Keine Eingabedatei angegeben.",
+  "error.not_a_file": "Pfad ist keine Datei: {path}",
+  "warn.no_speech": "Keine Sprache erkannt. Das Transkript ist leer.",
+  "warn.unknown_speaker": "Sprecher ohne Treffer in der Galerie bleibt ohne Namen.",
+  "cli.written": "Geschrieben: {path}",
+  "cli.done": "Fertig: {segments} Segmente, {speakers} Sprecher, {languages} Sprachen.",
+  "cli.failed": "Fehlgeschlagen: {path}: {message}",
+  "cli.adapters": "Registrierte Adapter:",
+  "cli.licenses": "Lizenzen der Standardmodelle:",
+  "cli.no_adapters": "Keine Adapter registriert."
+}

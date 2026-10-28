@@ -1,0 +1,16 @@
+{
+  "error.generic": "Error: {detail}",
+  "error.unknown_adapter": "Adapter '{name}' is not registered for port '{port}'. Known: {available}",
+  "error.unsupported_language": "Target language '{language}' is not supported. Available: {available}",
+  "error.audio_decode": "Cannot read audio file: {path} ({detail})",
+  "error.no_input": "No input file given.",
+  "error.not_a_file": "Path is not a file: {path}",
+  "warn.no_speech": "No speech detected. The transcript is empty.",
+  "warn.unknown_speaker": "A speaker without a gallery match is left unnamed.",
+  "cli.written": "Written: {path}",
+  "cli.done": "Done: {segments} segments, {speakers} speakers, {languages} languages.",
+  "cli.failed": "Failed: {path}: {message}",
+  "cli.adapters": "Registered adapters:",
+  "cli.licenses": "Licenses of the default models:",
+  "cli.no_adapters": "No adapters registered."
+}
