@@ -5,11 +5,11 @@ translation into one or more target languages, speaker recognition against a loc
 gallery, live streaming from a microphone, burned-in subtitles and a web interface.
 Every building block is a replaceable plug-in.
 
-Status: **P0 only.** The core, the data model, the adapter registry, the exporters and the
-command line are built and covered by tests. The machine-learning adapters (faster-whisper,
-pyannote, VoxLingua107, MADLAD, weSpeaker) are **not wired yet** — that is stage P1.
-The gallery (P2), streaming (P3), video subtitles (P4), the HTTP service (P5) and the Flet
-interface (P6) are **not built**.
+Status: **P0 und P1 fertig.** Kern, Datenmodell, Adapter-Registry, Exporte, Kommandozeile und die
+vier Modelladapter (faster-whisper large-v3, pyannote 3.1, VoxLingua107, MADLAD-400-3B-MT) sind
+gebaut, getestet und auf echter Sprache gelaufen (`EVIDENCE-P0.md`, `EVIDENCE-P1.md`).
+Die Galerie (P2), Streaming (P3), Video-Untertitel (P4), der HTTP-Dienst (P5) und die
+Flet-Oberfläche (P6) sind **nicht gebaut**.
 
 ## What it does
 

@@ -67,6 +67,77 @@ def _hf_token(explicit: str | None) -> str | None:
     return None
 
 
+def _token_shim(original: Any, accepts_use_auth_token: bool) -> Any:
+    """pyannote 3.x übergibt `use_auth_token`, huggingface_hub 2.x nur noch `token`."""
+    if accepts_use_auth_token:
+        return original
+
+    def forward(*args: Any, use_auth_token: Any = None, **kwargs: Any) -> Any:
+        if use_auth_token is not None and "token" not in kwargs:
+            kwargs["token"] = use_auth_token
+        return original(*args, **kwargs)
+
+    return forward
+
+
+def _patch_hub_compatibility() -> None:
+    """Hängt vor jeden bereits gebundenen `hf_hub_download` einen Token-Übersetzer.
+
+    pyannote 3.x ruft `hf_hub_download(..., use_auth_token=...)`. huggingface_hub 2.x kennt
+    das Argument nicht mehr. Weil pyannote die Funktion an mehreren Stellen importiert,
+    werden alle gebundenen Namen ersetzt, nicht nur das Paketattribut.
+    """
+    import inspect
+    import sys
+
+    for name, module in list(sys.modules.items()):
+        if module is None:
+            continue
+        if name != "huggingface_hub" and not name.startswith(("huggingface_hub.", "pyannote")):
+            continue
+        candidate = getattr(module, "hf_hub_download", None)
+        if candidate is None or not callable(candidate):
+            continue
+        if getattr(candidate, "_transcriber_token_shim", False):
+            continue
+        try:
+            parameters = inspect.signature(candidate).parameters
+        except (TypeError, ValueError):  # pragma: no cover - exotische Aufrufobjekte
+            continue
+        if "use_auth_token" in parameters:
+            continue
+        shim = _token_shim(candidate, False)
+        module.hf_hub_download = shim  # type: ignore[attr-defined]
+        shim._transcriber_token_shim = True
+
+
+def _allow_torch_version_global() -> None:
+    """pyannote-Checkpoints enthalten Klassen, die torch ≥ 2.6 sonst ablehnt.
+
+    Es sind reine Metadaten-Klassen aus pyannote selbst (Version, Problem, Auflösung, Task).
+    """
+    import torch
+
+    allowlist = getattr(torch.serialization, "add_safe_globals", None)
+    if not callable(allowlist):
+        return
+    allowed: list[object] = []
+    version_type = getattr(getattr(torch, "torch_version", None), "TorchVersion", None)
+    if version_type is not None:
+        allowed.append(version_type)
+    try:
+        from pyannote.audio.core import task as pyannote_task
+
+        for name in ("Specifications", "Problem", "Resolution", "Task"):
+            candidate = getattr(pyannote_task, name, None)
+            if candidate is not None:
+                allowed.append(candidate)
+    except ImportError:  # pragma: no cover - pyannote fehlt
+        pass
+    if allowed:
+        allowlist(allowed)
+
+
 class PyannoteDiarizer:
     """pyannote.audio mit der Pipeline speaker-diarization-3.1 (SPEC D2)."""
 
@@ -78,11 +149,14 @@ class PyannoteDiarizer:
     ) -> None:
         from pyannote.audio import Pipeline
 
+        _patch_hub_compatibility()
+        _allow_torch_version_global()
         resolved = _hf_token(token)
         if resolved:
-            self._pipeline = Pipeline.from_pretrained(model, token=resolved)
-        else:
-            self._pipeline = Pipeline.from_pretrained(model)
+            # pyannote 3.x kennt kein `token`-Argument, 4.x schon. Die Umgebungsvariable
+            # funktioniert in beiden Fassungen.
+            os.environ.setdefault("HF_TOKEN", resolved)
+        self._pipeline = Pipeline.from_pretrained(model)
         self._device = device
 
     def diarize(
@@ -164,9 +238,17 @@ class MadladTranslator:
         self._device = device
         torch_dtype = getattr(torch, dtype)
         self._tokenizer = AutoTokenizer.from_pretrained(model)
-        self._model = (
-            AutoModelForSeq2SeqLM.from_pretrained(model, dtype=torch_dtype).to(device).eval()
+        # device_map lädt Gewicht für Gewicht auf die GPU. Ohne das liegt die fp32-Kopie
+        # zusätzlich im RAM und der Lauf stirbt an Speichermangel.
+        self._model = AutoModelForSeq2SeqLM.from_pretrained(
+            model,
+            dtype=torch_dtype,
+            device_map=None if device == "cpu" else device,
+            low_cpu_mem_usage=True,
         )
+        if device == "cpu":
+            self._model = self._model.to(device)
+        self._model.eval()
         self._batch_size = batch_size
         self._max_new_tokens = max_new_tokens
 
