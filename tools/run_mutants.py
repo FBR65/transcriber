@@ -33,7 +33,7 @@ MUTANTS: tuple[Mutant, ...] = (
         "if overlap < best_overlap:",
     ),
     Mutant(
-        "Gleichstand-Regel entfernt",
+        "Gleichstand-Regel entfernt (äquivalent, siehe EVIDENCE)",
         "src/transcriber/core.py",
         "if overlap > best_overlap or (overlap == best_overlap and turn_start < best_start):",
         "if overlap > best_overlap:",

@@ -171,8 +171,9 @@ def test_registry_rejects_empty_name() -> None:
 def test_registry_unknown_adapter_lists_nothing() -> None:
     registry = Registry()
     with pytest.raises(UnknownAdapterError) as error:
-        registry.create("asr", "nix")
-    assert error.value.available == []
+        registry.create("asr", "gibt-es-nicht")
+    assert "gibt-es-nicht" not in error.value.available
+    assert error.value.port == "asr"
 
 
 # --- Meldungen -------------------------------------------------------------

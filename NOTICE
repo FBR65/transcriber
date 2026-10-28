@@ -1,0 +1,47 @@
+Transcriber — NOTICE
+
+Dieses Projekt nutzt fremde Komponenten. Die folgenden Hinweise sind Pflicht und müssen bei
+jeder Weitergabe mitgegeben werden.
+
+1. pyannote/wespeaker-voxceleb-resnet34-LM
+   Lizenz: Creative Commons Attribution 4.0 International (CC-BY-4.0)
+   Rechteinhaber: pyannoteAI / CNRS
+   Quelle: https://huggingface.co/pyannote/wespeaker-voxceleb-resnet34-LM
+   Verwendung: Stimmabdruck (Sprecher-Einbettung) für die Galerie.
+   Änderungen an den Gewichten wurden nicht vorgenommen.
+
+   Enthält die Arbeit von WeSpeaker:
+   Wang, Hongji et al., "Wespeaker: A research and production oriented speaker embedding
+   learning toolkit", ICASSP 2023.
+
+2. PyTorch
+   Lizenz: BSD-3-Clause (PyTorch-Variante mit zusätzlichen Hinweisen Dritter)
+   Rechteinhaber: Facebook, Inc. und Mitwirkende; Teile von Idiap Research Institute und
+   DeepMind Technologies
+   Quelle: https://github.com/pytorch/pytorch/blob/main/LICENSE
+
+3. Whisper-Gewichte
+   Modell: Systran/faster-whisper-large-v3, abgeleitet von openai/whisper-large-v3
+   Lizenz: MIT (Systran), Original Apache-2.0 (OpenAI)
+   Quelle: https://huggingface.co/Systran/faster-whisper-large-v3
+
+4. pyannote.audio und Modelle
+   Lizenz: MIT
+   Rechteinhaber: CNRS
+   Quelle: https://github.com/pyannote/pyannote-audio
+
+5. speechbrain und VoxLingua107-Modell
+   Lizenz: Apache-2.0
+   Quelle: https://github.com/speechbrain/speechbrain
+
+6. MADLAD-400-3B-MT
+   Lizenz: Apache-2.0
+   Rechteinhaber: Google Research
+   Quelle: https://huggingface.co/google/madlad400-3b-mt
+
+7. ffmpeg / ffprobe (Werkzeug auf dem Host, nicht eingebettet)
+   Lizenz des verwendeten Builds: GPL v3 oder später (`--enable-gpl`)
+   Hinweis: Bei Weitergabe des Produkts zusammen mit diesem Build sind die GPL-Pflichten zu
+   erfüllen. Für die Weitergabe ist ein LGPL-Build einzuplanen.
+
+Die vollständige Tabelle mit Prüfdatum steht in LICENSES.md.

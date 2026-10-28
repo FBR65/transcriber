@@ -245,7 +245,7 @@ und einem kurzen Bericht. Du kannst nach jeder Stufe stoppen.
 
 | Stufe | Inhalt | Prüfbar durch |
 |---|---|---|
-| P0 | Gerüst: Datenmodell, Registry, Konfiguration, CLI (`file`), Export, Fehlerfälle | S4–S12 |
+| P0 | Gerüst: Datenmodell, Registry, Konfiguration, CLI (`file`), Export, Fehlerfälle, Ordner (S15), Lizenzwächter (S31) | S4–S12, S15, S27, S28, S30, S31 |
 | P1 | Modelle: ASR, Diarization, Sprach-ID, Übersetzung | S1–S3, echter Lauf auf einer echten Datei |
 | P2 | Galerie: Stimmabdruck, Anmeldung, Löschen, Sperre | S16–S19, S22 |
 | P3 | Streaming: VAD, Mikrofon, Ereignisse | S13, S14 |

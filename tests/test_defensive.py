@@ -186,7 +186,9 @@ def test_cli_adapters_without_plugins(monkeypatch: pytest.MonkeyPatch) -> None:
 
     from transcriber import cli as cli_module
 
-    monkeypatch.setattr(cli_module, "DEFAULT_REGISTRY", Registry())
+    empty = Registry()
+    monkeypatch.setattr(empty, "discover", lambda *args, **kwargs: None)
+    monkeypatch.setattr(cli_module, "DEFAULT_REGISTRY", empty)
     result = CliRunner().invoke(app, ["adapters"])
     assert result.exit_code == 0
     assert "Keine Adapter" in result.output
