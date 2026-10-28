@@ -224,7 +224,7 @@ Ich bin kein Jurist. Diese Punkte sind technische Pflichten im SPEC, keine Recht
 | ID | Frage | Empfehlung / Stand |
 |---|---|---|
 | D1 | Standard-ASR: large-v3, large-v3-turbo, whisper.cpp | **entschieden am 2026-10-28: a** — faster-whisper large-v3, int8_float16, ca. 3 GB VRAM. Turbo bleibt als Option in der Konfiguration |
-| D2 | Sprechertrennung | **entschieden: pyannote 3.1.** **Zugang freigeschaltet und geprüft am 2026-10-28:** `config.yaml` beider Repos HTTP 200, Gewichte-Download von `segmentation-3.0` (5,9 MB) und `wespeaker-voxceleb-resnet34-LM` (26,6 MB) HTTP 206 mit dem Token von Konto `FBR-65` |
+| D2 | Sprechertrennung | **entschieden: pyannote 3.1.** **Zugang freigeschaltet und geprüft am 2026-10-28:** `config.yaml` beider Repos HTTP 200, Gewichte-Download von `segmentation-3.0` (5,9 MB) und `wespeaker-voxceleb-resnet34-LM` (26,6 MB) HTTP 206 mit dem Token von Konto `FBR-65`. **Ergänzung 2026-10-28:** pyannote.audio ≥ 4.0 lädt für den Namen `speaker-diarization-3.1` still die Pipeline `speaker-diarization-community-1` (CC-BY-4.0, gated). Deshalb ist `pyannote.audio<4` festgelegt (installiert 3.4.0). |
 | D3 | Übersetzer: MADLAD-400-3B, M2M-100, Opus-MT | **entschieden am 2026-10-28: a** — MADLAD-400-3B-MT, Apache-2.0 |
 | D4 | HTTP-Service in v1 | **entschieden am 2026-10-28: b** — FastAPI in v1, Pfade in Abschnitt 3.1, Abnahme S23–S26 |
 | D5 | Plug-in-Mechanismus: entry points oder Klassenpfad | **entschieden am 2026-10-28: a** — entry points plus Registry |
@@ -262,7 +262,8 @@ Ich messe nach jeder Stufe.
 | Schritt | Inhalt | Begründung |
 |---|---|---|
 | venv | `uv venv --python 3.12`, alle Aufrufe über `uv run` | Host hat 3.14; torch/ctranslate2 liefern Räder für 3.12 |
-| Laufzeit-Pakete | `faster-whisper`, `pyannote.audio`, `transformers`, `torch` (cu12x), `speechbrain`, `silero-vad`, `sounddevice`, `flet`, `fastapi`, `uvicorn`, `python-multipart`, `websockets`, `numpy`, `soundfile`, `av`, `typer`, `pydantic` | je ein Paket pro Port plus CLI, Oberfläche, HTTP, Ton |
+| Laufzeit-Pakete | `faster-whisper`, `pyannote.audio<4`, `transformers`, `torch<2.9` (cu12x), `torchaudio<2.9`, `av<17`, `speechbrain`, `silero-vad`, `sounddevice`, `flet`, `fastapi`, `uvicorn`, `python-multipart`, `websockets`, `numpy`, `soundfile`, `typer`, `pydantic` | je ein Paket pro Port plus CLI, Oberfläche, HTTP, Ton |
+| Versionsgrenzen, geprüft am 2026-10-28 | `pyannote.audio<4` — ab 4.0 wird für den Namen `speaker-diarization-3.1` still `speaker-diarization-community-1` geladen (CC-BY-4.0, gated). `torch<2.9`/`torchaudio<2.9` — pyannote 3.4 nutzt `torchaudio.AudioMetaData`, das ab 2.9 fehlt. `av<17` — faster-whisper 1.2.1 übergibt `metadata_errors`, das PyAV 17 nicht mehr kennt. | Ohne diese Grenzen startet der Lauf nicht oder lädt ein anderes Modell als freigegeben |
 | Test und Prüfung | `pytest`, `pytest-cov`, `pytest-randomly`, `httpx`, `mypy`, `ruff`, `mutmut` oder Handmutanten | Gauntlet nach old-coder |
 | Modelle | Download nach `~/.cache/huggingface` beim ersten Lauf, ca. 9–10 GB | kein Modell im Repo |
 | HF-Token | `~/.cache/huggingface/token`, Rechte 600, nicht im Repo, nicht in Logs | gated pyannote-Modelle |

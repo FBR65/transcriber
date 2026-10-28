@@ -105,6 +105,36 @@ MUTANTS: tuple[Mutant, ...] = (
         "### Sprachen",
     ),
     Mutant(
+        "MADLAD-Präfix fehlt",
+        "src/transcriber/adapters/mapping.py",
+        'return f"<2{code}> {text}"',
+        "return text",
+    ),
+    Mutant(
+        "Veraltete Sprachcodes nicht ersetzt",
+        "src/transcriber/adapters/mapping.py",
+        "return OBSOLETE_CODES.get(code, code)",
+        "return code",
+    ),
+    Mutant(
+        "Sprecherwechsel nicht sortiert",
+        "src/transcriber/adapters/mapping.py",
+        "turns.sort(key=lambda turn: turn.start_s)",
+        "pass",
+    ),
+    Mutant(
+        "Leere Whisper-Segmente behalten",
+        "src/transcriber/adapters/mapping.py",
+        "if not text or end <= start:",
+        "if end < start:",
+    ),
+    Mutant(
+        "Adapter wird nicht freigegeben",
+        "src/transcriber/core.py",
+        "    hook = getattr(adapter, \"release\", None)\n    if callable(hook):\n        hook()",
+        "    return None",
+    ),
+    Mutant(
         "JSON-Export nicht sortiert",
         "src/transcriber/exporters.py",
         "text = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)",

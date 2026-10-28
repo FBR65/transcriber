@@ -12,9 +12,10 @@ PyPI-Metadaten (`https://pypi.org/pypi/<paket>/json`) und die GitHub-Lizenz (API
 |---|---|---|---|---|
 | faster-whisper, CTranslate2 | PyPI / GitHub SYSTRAN, OpenNMT | MIT | ja | — |
 | Systran/faster-whisper-large-v3 (Gewichte) | HF | MIT | ja | keine Freigabe nötig |
-| pyannote.audio (Code) | GitHub CNRS | MIT | ja | — |
-| pyannote/speaker-diarization-3.1 | HF | MIT | ja | gated: Bedingungen annehmen, Token nötig |
-| pyannote/segmentation-3.0 | HF | MIT | ja | gated |
+| `pyannote.audio` (Code) | GitHub CNRS | MIT | ja | **festgelegt auf `<4`** (installiert 3.4.0) |
+| `pyannote/speaker-diarization-3.1` | HF | MIT | ja | gated: Nutzerbedingungen annehmen, Token nötig |
+| `pyannote/segmentation-3.0` | HF | MIT | ja | gated |
+| `pyannote/speaker-diarization-community-1` | HF | CC-BY-4.0 | ja, aber **nicht verwendet** | wird von pyannote.audio ≥ 4.0 still statt 3.1 geladen. Deshalb Version `<4`. |
 | pyannote/wespeaker-voxceleb-resnet34-LM | HF | CC-BY-4.0 | ja | **Namensnennung nötig**, siehe `NOTICE` |
 | speechbrain | PyPI / GitHub | Apache-2.0 | ja | — |
 | speechbrain/lang-id-voxlingua107-ecapa | HF | Apache-2.0 | ja | Trainingsdaten aus YouTube-Mitschnitten (VoxLingua107), Restrisiko notiert |

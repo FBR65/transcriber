@@ -90,6 +90,13 @@ def _drafts(
     return drafts
 
 
+def release(adapter: object) -> None:
+    """Gibt Speicher frei, wenn der Adapter das kann. Der Kern kennt kein ML."""
+    hook = getattr(adapter, "release", None)
+    if callable(hook):
+        hook()
+
+
 def run_file(
     path: Path | str,
     *,
@@ -101,46 +108,66 @@ def run_file(
     reg = registry or DEFAULT_REGISTRY
     cfg = config or RunConfig(**DEFAULT_ADAPTERS, target_languages=["de"])
     source = probe(Path(path))
+    audio_path = Path(source.path or str(path))
 
     asr = reg.create("asr", cfg.asr)
+    try:
+        raw = list(asr.transcribe(audio_path))
+    finally:
+        release(asr)
+
     diarizer = reg.create("diarizer", cfg.diarizer)
-    language_id = reg.create("language_id", cfg.language_id)
-    translator = reg.create("translator", cfg.translator)
-    if cfg.voiceprint:
-        reg.create("voiceprint", cfg.voiceprint)
-
-    available = sorted(translator.languages())
-    for target in cfg.target_languages:
-        if target not in available:
-            raise UnsupportedLanguageError(target, available)
-
-    audio_path = Path(source.path or str(path))
-    raw = list(asr.transcribe(audio_path))
-    turns: list[Turn] = [
-        (turn.start_s, turn.end_s, turn.speaker) for turn in diarizer.diarize(audio_path)
-    ]
+    try:
+        turns: list[Turn] = [
+            (turn.start_s, turn.end_s, turn.speaker) for turn in diarizer.diarize(audio_path)
+        ]
+    finally:
+        release(diarizer)
     if not turns and raw:
         turns = [(0.0, source.duration_s, "S1")]
     mapping = _normalize([label for _, _, label in turns])
-    drafts = _drafts(raw, turns, mapping, language_id, audio_path)
+
+    if cfg.voiceprint:
+        reg.create("voiceprint", cfg.voiceprint)
+
+    language_id = None
+    needs_language_id = any(getattr(item, "language", None) is None for item in raw)
+    try:
+        if needs_language_id:
+            language_id = reg.create("language_id", cfg.language_id)
+            drafts = _drafts(raw, turns, mapping, language_id, audio_path)
+        else:
+            drafts = _drafts(raw, turns, mapping, None, audio_path)
+    finally:
+        if language_id is not None:
+            release(language_id)
 
     translations: dict[int, dict[str, str]] = {draft.index: {} for draft in drafts}
-    for target in cfg.target_languages:
-        batches: dict[str, list[Draft]] = {}
-        for draft in drafts:
-            if draft.language == target:
-                translations[draft.index][target] = draft.text
-            else:
-                batches.setdefault(draft.language, []).append(draft)
-        for source_language, group in batches.items():
-            texts = [draft.text for draft in group]
-            result = list(translator.translate(texts, source_language, target))
-            if len(result) != len(texts):
-                raise ValueError(
-                    f"translator returned {len(result)} texts for {len(texts)} inputs"
-                )
-            for draft, text in zip(group, result, strict=True):
-                translations[draft.index][target] = text
+    if drafts:
+        translator = reg.create("translator", cfg.translator)
+        try:
+            available = sorted(translator.languages())
+            for target in cfg.target_languages:
+                if target not in available:
+                    raise UnsupportedLanguageError(target, available)
+            for target in cfg.target_languages:
+                batches: dict[str, list[Draft]] = {}
+                for draft in drafts:
+                    if draft.language == target:
+                        translations[draft.index][target] = draft.text
+                    else:
+                        batches.setdefault(draft.language, []).append(draft)
+                for source_language, group in batches.items():
+                    texts = [draft.text for draft in group]
+                    result = list(translator.translate(texts, source_language, target))
+                    if len(result) != len(texts):
+                        raise ValueError(
+                            f"translator returned {len(result)} texts for {len(texts)} inputs"
+                        )
+                    for draft, text in zip(group, result, strict=True):
+                        translations[draft.index][target] = text
+        finally:
+            release(translator)
 
     segments: list[Segment] = []
     for draft in drafts:

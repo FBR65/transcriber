@@ -7,7 +7,16 @@ requires-python = ">=3.12"
 license = { text = "MIT" }
 authors = [{ name = "Frank Reis" }]
 dependencies = [
+    "av<17",
+    "faster-whisper>=1.2.1",
+    "numpy>=2.5.4",
+    "pyannote-audio<4",
     "pydantic>=2.9",
+    "soundfile>=0.14.0",
+    "speechbrain>=1.1.2",
+    "torch<2.9",
+    "torchaudio<2.9",
+    "transformers>=5.21.0",
     "typer>=0.12",
 ]
 
@@ -15,7 +24,7 @@ dependencies = [
 transcriber = "transcriber.cli:app"
 
 [project.entry-points."transcriber.adapters"]
-# Plug-ins melden sich hier an. Standard-Adapter folgen in P1.
+builtin = "transcriber.adapters.builtin:register"
 
 [dependency-groups]
 dev = [
@@ -35,12 +44,28 @@ packages = ["src/transcriber"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-q"
+addopts = "-q -m 'not integration'"
+markers = [
+    "integration: braucht echte Modelle und Netz (nicht im Standardlauf)",
+]
 
 [tool.mypy]
 python_version = "3.12"
 strict = true
 files = ["src"]
+
+[[tool.mypy.overrides]]
+# Diese Pakete liefern keine Typangaben. Der eigene Code bleibt streng geprüft.
+module = [
+    "av.*",
+    "faster_whisper.*",
+    "pyannote.*",
+    "speechbrain.*",
+    "torch.*",
+    "torchaudio.*",
+    "transformers.*",
+]
+ignore_missing_imports = true
 
 [tool.ruff]
 line-length = 100
@@ -52,3 +77,5 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 [tool.ruff.lint.per-file-ignores]
 # Typer braucht Funktionsaufrufe als Default (B008), das ist kein Fehler.
 "src/transcriber/cli.py" = ["B008"]
+# SIM905 würde die Sprachliste in eine sehr lange Zeile zurückbauen (E501).
+"src/transcriber/adapters/mapping.py" = ["SIM905"]
