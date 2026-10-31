@@ -140,6 +140,19 @@ def licenses() -> None:
 
 
 @app.command()
+def ui(
+    api: str = typer.Option("http://127.0.0.1:8000", "--api", help="Adresse des Dienstes."),
+    port: int = typer.Option(8550, "--port", help="Port der Oberfläche."),
+    gallery: str | None = typer.Option(None, "--gallery", help="Pfad der Galerie-Datei."),
+    lang: str = typer.Option("de", "--lang", help="Sprache der Oberfläche: de oder en."),
+) -> None:
+    """Startet die Oberfläche im Web-Modus."""
+    from .ui import run_ui
+
+    run_ui(api=api, port=port, lang=normalize_language(lang), gallery_path=gallery)
+
+
+@app.command()
 def serve(
     host: str = typer.Option("127.0.0.1", "--host", help="Adresse. Ohne Angabe nur lokal."),
     port: int = typer.Option(8000, "--port", help="Port."),

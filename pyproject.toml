@@ -11,6 +11,7 @@ dependencies = [
     "av<17",
     "fastapi>=0.162.0",
     "faster-whisper>=1.2.1",
+    "flet>=1.0.5",
     "numpy>=2.5.4",
     "pyannote-audio<4",
     "pydantic>=2.9",
@@ -65,6 +66,7 @@ files = ["src"]
 module = [
     "av.*",
     "faster_whisper.*",
+    "flet.*",
     "pyannote.*",
     "sounddevice.*",
     "speechbrain.*",

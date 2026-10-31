@@ -22,5 +22,15 @@
   "cli.gallery_empty": "The gallery is empty.",
   "cli.gallery_path": "Gallery: {path}",
   "error.video_render": "Cannot render video: {path} ({detail})",
-  "cli.video_written": "Video written: {path}"
+  "cli.video_written": "Video written: {path}",
+  "ui.title": "Transcription",
+  "ui.upload": "Upload file",
+  "ui.refresh": "Refresh",
+  "ui.jobs": "Jobs",
+  "ui.people": "People in the gallery",
+  "ui.delete": "Delete",
+  "ui.transcript": "Transcript",
+  "ui.empty": "Nothing here yet.",
+  "ui.language": "Language",
+  "ui.offline": "Service not reachable."
 }

@@ -22,5 +22,15 @@
   "cli.gallery_empty": "Die Galerie ist leer.",
   "cli.gallery_path": "Galerie: {path}",
   "error.video_render": "Video kann nicht erzeugt werden: {path} ({detail})",
-  "cli.video_written": "Video geschrieben: {path}"
+  "cli.video_written": "Video geschrieben: {path}",
+  "ui.title": "Transkription",
+  "ui.upload": "Datei hochladen",
+  "ui.refresh": "Aktualisieren",
+  "ui.jobs": "Aufträge",
+  "ui.people": "Personen in der Galerie",
+  "ui.delete": "Löschen",
+  "ui.transcript": "Transkript",
+  "ui.empty": "Nichts vorhanden.",
+  "ui.language": "Sprache",
+  "ui.offline": "Dienst nicht erreichbar."
 }
