@@ -290,6 +290,7 @@ class MadladTranslator:
 
 def register(registry: Registry) -> None:
     """Meldet die Standardadapter an. Wird über den Einstiegspunkt geladen."""
+    from .source import EnergyVad, SileroVad
     from .video import FfmpegVideoRenderer
     from .voiceprint import WeSpeakerVoiceprint
 
@@ -299,3 +300,6 @@ def register(registry: Registry) -> None:
     registry.register("translator", "madlad", MadladTranslator)
     registry.register("voiceprint", "wespeaker", WeSpeakerVoiceprint)
     registry.register("video_renderer", "ffmpeg", FfmpegVideoRenderer)
+    registry.register("vad", "energy", EnergyVad)
+    registry.register("vad", "silero", SileroVad)
+    registry.register("embedder", "wespeaker", WeSpeakerVoiceprint)

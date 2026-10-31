@@ -96,42 +96,41 @@ class EmptyDiarizer:
         return []
 
 
-def test_smooth_languages_lends_the_nearest_confident_language() -> None:
-    from transcriber.core import Draft, smooth_languages
+def test_decide_languages_keeps_the_file_language() -> None:
+    from transcriber.core import Draft, decide_languages
 
     drafts = [
         Draft(1, 0.0, 1.0, "S1", "nl", 0.29, "Hallo"),
         Draft(2, 1.0, 4.0, "S1", "de", 0.99, "Guten Tag"),
         Draft(3, 4.0, 4.4, "S2", "kk", 0.19, "Ja"),
-        Draft(4, 4.4, 8.0, "S2", "de", 1.00, "Auf Wiedersehen"),
     ]
-    smooth_languages(drafts)
-    assert [draft.language for draft in drafts] == ["de", "de", "de", "de"]
+    decide_languages(drafts, "de")
+    assert [draft.language for draft in drafts] == ["de", "de", "de"]
 
 
-def test_smooth_languages_keeps_everything_when_nothing_is_confident() -> None:
-    from transcriber.core import Draft, smooth_languages
-
-    drafts = [Draft(1, 0.0, 1.0, "S1", "nl", 0.2, "Hallo")]
-    smooth_languages(drafts)
-    assert drafts[0].language == "nl"
-
-
-def test_short_segments_follow_the_file_language() -> None:
-    from transcriber.core import Draft, apply_file_language
+def test_decide_languages_accepts_a_clear_change() -> None:
+    from transcriber.core import Draft, decide_languages
 
     drafts = [
-        Draft(1, 0.0, 1.0, "S1", "da", 0.98, "Kurz und falsch"),
-        Draft(2, 1.0, 6.0, "S2", "en", 0.99, "Länger und anders"),
+        Draft(1, 0.0, 8.0, "S1", "en", 0.95, "A long English passage"),
+        Draft(2, 8.0, 10.0, "S2", "en", 0.95, "short"),
     ]
-    apply_file_language(drafts, "de")
-    assert drafts[0].language == "de", "kurzer Abschnitt muss der Dateisprache folgen"
-    assert drafts[1].language == "en", "langer Abschnitt behält seine Sprache"
+    decide_languages(drafts, "de")
+    assert drafts[0].language == "en", "langer, sicher erkannter Wechsel bleibt"
+    assert drafts[1].language == "de", "kurzer Abschnitt folgt der Dateisprache"
 
 
-def test_file_language_is_ignored_when_unknown() -> None:
-    from transcriber.core import Draft, apply_file_language
+def test_decide_languages_ignores_unsure_short_changes() -> None:
+    from transcriber.core import Draft, decide_languages
+
+    drafts = [Draft(1, 0.0, 10.0, "S1", "fr", 0.62, "unsicher und lang")]
+    decide_languages(drafts, "de")
+    assert drafts[0].language == "de"
+
+
+def test_decide_languages_without_file_language_keeps_everything() -> None:
+    from transcriber.core import Draft, decide_languages
 
     drafts = [Draft(1, 0.0, 1.0, "S1", "da", 0.9, "Kurz")]
-    apply_file_language(drafts, None)
+    decide_languages(drafts, None)
     assert drafts[0].language == "da"

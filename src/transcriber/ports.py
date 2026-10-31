@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
+import numpy as np  # noqa: TC003  (nur für Typangaben)
+
 from .models import Transcript
 
 
@@ -97,3 +99,19 @@ class VideoRenderer(Protocol):
     def render(
         self, video: Path, transcript: Transcript, out: Path, language: str | None = None
     ) -> Path: ...
+
+
+@runtime_checkable
+class Vad(Protocol):
+    """Sprachaktivität. Liefert Abschnitte, die durch Stille abgeschlossen sind."""
+
+    def completed_spans(
+        self, samples: np.ndarray, sample_rate: int
+    ) -> list[tuple[float, float]]: ...
+
+
+@runtime_checkable
+class Embedder(Protocol):
+    """Stimmabdruck eines Abschnitts, für die Sprecherzuordnung im Stream."""
+
+    def embed(self, path: Path, start_s: float, end_s: float) -> np.ndarray: ...

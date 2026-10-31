@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import itertools
 import sys
 import tomllib
+from collections.abc import Iterator
 from pathlib import Path
 
+import numpy as np
 import typer
 
 from .audio import AUDIO_SUFFIXES, probe
@@ -134,6 +137,80 @@ def licenses() -> None:
     for entry in LICENCES:
         marker = "ja" if entry.commercial else "NEIN"
         typer.echo(f"  {entry.port:12} {entry.model:48} {entry.licence:12} kommerziell: {marker}")
+
+
+@app.command()
+def stream(
+    source: str = typer.Option(..., "--source", "-s", help="Datei oder „mic“ für das Mikrofon."),
+    target: list[str] = typer.Option(None, "--target", "-t", help="Zielsprache, mehrfach möglich."),
+    config: str | None = typer.Option(None, "--config", "-c", help="TOML-Konfiguration."),
+    out: str | None = typer.Option(None, "--out", "-o", help="Zielordner für die Ereignisse."),
+    seconds: float | None = typer.Option(
+        None, "--seconds", help="Nach so vielen Sekunden aufhören (nur mit Mikrofon)."
+    ),
+    lang: str = typer.Option("de", "--lang", help="Sprache der Meldungen: de oder en."),
+) -> None:
+    """Laufender Ton: gibt Ereignisse aus, während Ton ankommt."""
+    import json
+
+    from .adapters.source import iter_file, iter_mic
+    from .stream import run_stream
+
+    language = normalize_language(lang)
+    try:
+        settings = load_settings(Path(config) if config else None, lang=language)
+    except (OSError, tomllib.TOMLDecodeError) as error:
+        typer.echo(translate("error.generic", language, detail=str(error)))
+        raise typer.Exit(code=1) from error
+
+    run_config = settings.run
+    if target:
+        run_config = run_config.model_copy(update={"target_languages": list(target)})
+    blocks: Iterator[np.ndarray]
+    if source == "mic":
+        live: Iterator[np.ndarray] = iter_mic()
+        if seconds:
+            limit = int(seconds / 0.5)
+            blocks = itertools.islice(live, limit)
+        else:
+            blocks = live
+    else:
+        path = Path(source)
+        if not path.is_file():
+            typer.echo(translate("error.not_a_file", language, path=source))
+            raise typer.Exit(code=1)
+        blocks = iter_file(path)
+
+    out_dir = Path(out) if out else Path.cwd()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    events_path = out_dir / "ereignisse.jsonl"
+    count = 0
+    with events_path.open("w", encoding="utf-8") as handle:
+        try:
+            for event in run_stream(
+                blocks, 16000, config=run_config, lang=language, translate=bool(target)
+            ):
+                count += 1
+                line = {
+                    "index": event.index,
+                    "start_s": event.start_s,
+                    "end_s": event.end_s,
+                    "speaker": event.speaker,
+                    "language": event.language,
+                    "language_confidence": event.language_confidence,
+                    "text": event.text,
+                    "translations": event.translations,
+                    "translated_from": event.translated_from,
+                    "is_final": event.is_final,
+                }
+                handle.write(json.dumps(line, ensure_ascii=False) + "\n")
+                handle.flush()
+                stamp = f"[{event.start_s:6.2f}-{event.end_s:6.2f}]"
+                typer.echo(f"{stamp} {event.speaker} {event.text}")
+        except TranscriberError as error:
+            typer.echo(error.localized(language))
+            raise typer.Exit(code=error.exit_code) from error
+    typer.echo(translate("cli.done", language, segments=count, speakers=1, languages=1))
 
 
 @app.command()

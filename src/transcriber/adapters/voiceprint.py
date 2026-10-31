@@ -48,6 +48,9 @@ class WeSpeakerVoiceprint:
         embedding = self._inference.crop(str(path), Segment(start_s, end_s))
         return numpy.asarray(embedding, dtype=numpy.float32).reshape(-1)
 
+    def embed(self, path: Path, start_s: float, end_s: float) -> numpy.ndarray:
+        return self._embedding(path, start_s, end_s)
+
     def identify(self, path: Path, start_s: float, end_s: float) -> VoiceprintMatch | None:
         return self._gallery.match(self._embedding(path, start_s, end_s))
 
