@@ -20,5 +20,7 @@
   "cli.gallery_list": "People in the gallery: {count}",
   "cli.gallery_row": "  {name} — {samples} voiceprint(s), since {created_at}",
   "cli.gallery_empty": "The gallery is empty.",
-  "cli.gallery_path": "Gallery: {path}"
+  "cli.gallery_path": "Gallery: {path}",
+  "error.video_render": "Cannot render video: {path} ({detail})",
+  "cli.video_written": "Video written: {path}"
 }

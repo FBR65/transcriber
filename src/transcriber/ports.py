@@ -88,3 +88,12 @@ class Voiceprint(Protocol):
     def delete(self, reference: str) -> int: ...
 
     def people(self) -> list[PersonInfo]: ...
+
+
+@runtime_checkable
+class VideoRenderer(Protocol):
+    """Brennt Untertitel in ein Video ein (SPEC D12 = b, S20)."""
+
+    def render(
+        self, video: Path, transcript: Transcript, out: Path, language: str | None = None
+    ) -> Path: ...

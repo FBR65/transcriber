@@ -19,8 +19,12 @@ def _stamp(seconds: float, separator: str = ",") -> str:
     return f"{hours:02d}:{minutes:02d}:{secs:02d}{separator}{millis:03d}"
 
 
-def _spoken(segment: Segment) -> str:
+def _spoken(segment: Segment, language: str | None = None) -> str:
     """Untertitel zeigen die Zielsprache, sonst den Originaltext."""
+    if language is not None:
+        if language in segment.translations:
+            return segment.translations[language]
+        return segment.text
     if segment.translations:
         first = next(iter(sorted(segment.translations.values())))
         return first
@@ -33,12 +37,12 @@ def write_json(transcript: Transcript, path: Path) -> None:
     path.write_text(text + "\n", encoding="utf-8")
 
 
-def write_srt(transcript: Transcript, path: Path) -> None:
+def write_srt(transcript: Transcript, path: Path, language: str | None = None) -> None:
     lines: list[str] = []
     for index, segment in enumerate(transcript.segments, start=1):
         lines.append(str(index))
         lines.append(f"{_stamp(segment.start_s)} --> {_stamp(segment.end_s)}")
-        lines.append(f"[{segment.speaker}] {_spoken(segment)}")
+        lines.append(f"[{segment.speaker}] {_spoken(segment, language)}")
         lines.append("")
     path.write_text("\n".join(lines), encoding="utf-8")
 

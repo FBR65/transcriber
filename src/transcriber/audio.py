@@ -86,3 +86,34 @@ def probe(path: Path) -> Source:
         sample_rate_hz=sample_rate,
         channels=channels,
     )
+
+
+def to_mono_wav(path: Path, target: Path, sample_rate: int = 16_000) -> Path:
+    """Wandelt beliebigen Ton in mono-WAV. pyannote/torchaudio kann mp4 nur so lesen."""
+    binary = shutil.which("ffmpeg") or "ffmpeg"
+    command = [
+        binary,
+        "-y",
+        "-v",
+        "error",
+        "-i",
+        str(path),
+        "-vn",
+        "-ac",
+        "1",
+        "-ar",
+        str(sample_rate),
+        "-c:a",
+        "pcm_s16le",
+        str(target),
+    ]
+    completed = subprocess.run(command, capture_output=True, text=True, timeout=600, check=False)
+    if completed.returncode != 0:
+        raise AudioDecodeError(str(path), (completed.stderr or "ffmpeg failed").strip()[:200])
+    if not target.is_file() or target.stat().st_size == 0:
+        raise AudioDecodeError(str(path), "no audio written")
+    return target
+
+
+def needs_conversion(source: Source) -> bool:
+    return source.channels != 1 or source.sample_rate_hz != 16_000

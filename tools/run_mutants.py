@@ -168,6 +168,24 @@ MUTANTS: tuple[Mutant, ...] = (
         "pass",
     ),
     Mutant(
+        "Untertitel-Filter fehlt",
+        "src/transcriber/adapters/video.py",
+        '        return f"subtitles={subtitle_file}:force_style=\'{style}\'"',
+        '        return "null"',
+    ),
+    Mutant(
+        "Tonspur beim Rendern verworfen",
+        "src/transcriber/adapters/video.py",
+        '            "-c:a",\n            "copy",',
+        '            "-an",',
+    ),
+    Mutant(
+        "Unbekannte Untertitelsprache erlaubt",
+        "src/transcriber/adapters/video.py",
+        "            if language not in available:",
+        "            if False:",
+    ),
+    Mutant(
         "JSON-Export nicht sortiert",
         "src/transcriber/exporters.py",
         "text = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)",

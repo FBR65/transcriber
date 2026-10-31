@@ -20,5 +20,7 @@
   "cli.gallery_list": "Personen in der Galerie: {count}",
   "cli.gallery_row": "  {name} — {samples} Stimmabdruck/Stimmabdrücke, seit {created_at}",
   "cli.gallery_empty": "Die Galerie ist leer.",
-  "cli.gallery_path": "Galerie: {path}"
+  "cli.gallery_path": "Galerie: {path}",
+  "error.video_render": "Video kann nicht erzeugt werden: {path} ({detail})",
+  "cli.video_written": "Video geschrieben: {path}"
 }

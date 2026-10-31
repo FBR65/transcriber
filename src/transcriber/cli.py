@@ -15,6 +15,7 @@ from .errors import TranscriberError
 from .exporters import EXPORTERS, export
 from .i18n import normalize_language, translate
 from .licensing import LICENCES
+from .models import Transcript
 from .registry import DEFAULT_REGISTRY
 
 app = typer.Typer(
@@ -133,6 +134,39 @@ def licenses() -> None:
     for entry in LICENCES:
         marker = "ja" if entry.commercial else "NEIN"
         typer.echo(f"  {entry.port:12} {entry.model:48} {entry.licence:12} kommerziell: {marker}")
+
+
+@app.command()
+def render(
+    video: str = typer.Argument(..., help="Videodatei."),
+    transcript: str = typer.Option(..., "--transcript", "-t", help="Transkript als JSON."),
+    out: str = typer.Option(..., "--out", "-o", help="Zieldatei, z. B. untertitelt.mp4."),
+    subtitle_lang: str | None = typer.Option(
+        None, "--subtitle-lang", help="Sprache der Untertitel aus dem Transkript."
+    ),
+    adapter: str = typer.Option("ffmpeg", "--adapter", help="Renderer."),
+    lang: str = typer.Option("de", "--lang", help="Sprache der Meldungen: de oder en."),
+) -> None:
+    """Brennt Untertitel aus einem Transkript in das Video ein."""
+    import json
+
+    language = normalize_language(lang)
+    try:
+        payload = json.loads(Path(transcript).read_text(encoding="utf-8"))
+        parsed = Transcript.model_validate(payload)
+    except (OSError, ValueError) as error:
+        typer.echo(translate("error.generic", language, detail=str(error)))
+        raise typer.Exit(code=1) from error
+
+    renderer = DEFAULT_REGISTRY.create("video_renderer", adapter)
+    try:
+        written = renderer.render(Path(video), parsed, Path(out), subtitle_lang)
+    except TranscriberError as error:
+        typer.echo(error.localized(language))
+        raise typer.Exit(code=error.exit_code) from error
+    finally:
+        release(renderer)
+    typer.echo(translate("cli.video_written", language, path=written))
 
 
 gallery_app = typer.Typer(add_completion=False, no_args_is_help=True, help="Galerie verwalten.")

@@ -281,6 +281,7 @@ class MadladTranslator:
 
 def register(registry: Registry) -> None:
     """Meldet die Standardadapter an. Wird über den Einstiegspunkt geladen."""
+    from .video import FfmpegVideoRenderer
     from .voiceprint import WeSpeakerVoiceprint
 
     registry.register("asr", "faster-whisper", WhisperAsr)
@@ -288,3 +289,4 @@ def register(registry: Registry) -> None:
     registry.register("language_id", "voxlingua", VoxLinguaLanguageId)
     registry.register("translator", "madlad", MadladTranslator)
     registry.register("voiceprint", "wespeaker", WeSpeakerVoiceprint)
+    registry.register("video_renderer", "ffmpeg", FfmpegVideoRenderer)

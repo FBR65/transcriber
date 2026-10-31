@@ -86,3 +86,15 @@ class PersonNotFoundError(TranscriberError):
 
     def params(self) -> dict[str, object]:
         return {"reference": self.reference}
+
+
+class VideoRenderError(TranscriberError):
+    key = "error.video_render"
+
+    def __init__(self, path: str, detail: str = "") -> None:
+        self.path = path
+        self.detail = detail
+        super().__init__(f"cannot render video {path!r}: {detail}")
+
+    def params(self) -> dict[str, object]:
+        return {"path": self.path, "detail": self.detail or "-"}

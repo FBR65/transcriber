@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+import tempfile
 from collections.abc import Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from .audio import probe
+from .audio import needs_conversion, probe, to_mono_wav
 from .config import DEFAULT_ADAPTERS
 from .errors import UnsupportedLanguageError
 from .i18n import translate
@@ -125,6 +126,13 @@ def run_file(
     cfg = config or RunConfig(**DEFAULT_ADAPTERS, target_languages=["de"])
     source = probe(Path(path))
     audio_path = Path(source.path or str(path))
+
+    # pyannote und speechbrain lesen über torchaudio/soundfile; mp4 und Mehrkanal
+    # gehen dort nicht. Deshalb einmal nach mono-WAV wandeln.
+    workdir = tempfile.TemporaryDirectory(prefix="transcriber-audio-")
+    converted = audio_path.suffix.lower() != ".wav" or needs_conversion(source)
+    if converted:
+        audio_path = to_mono_wav(audio_path, Path(workdir.name) / "ton.wav")
 
     asr = reg.create("asr", cfg.asr)
     try:
@@ -250,6 +258,8 @@ def run_file(
         warnings.append(translate("warn.no_speech", lang))
     elif gallery_size and len(matches) < len(order):
         warnings.append(translate("warn.unknown_speaker", lang))
+
+    workdir.cleanup()
 
     return Transcript(
         created_at=datetime.now(UTC).replace(microsecond=0),
