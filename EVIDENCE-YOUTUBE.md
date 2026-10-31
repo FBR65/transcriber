@@ -14,7 +14,7 @@ Quelle: `https://youtu.be/JIXkq4EcOZc`, Abschnitt 00:16:19 bis 00:20:46 (267 s)
 | Länge des Abschnitts | 267,0 s (4:27) |
 | Transkription + Sprechertrennung + Sprach-ID + Übersetzung | **59 s** (Faktor 0,22 zur Echtzeit) |
 | Segmente | 79 |
-| Gefundene Sprecher | **5** (S1 19 Segmente, S2 10, S3 22, S4 11, S5 17) |
+| Gefundene Sprecher | **5** (S1 19 Segmente, S2 10, S3 22, S4 11, S5 17). Vom Auftraggeber bestätigt: es waren tatsächlich 5 Sprecher. |
 | Erkannte Sprachen | de 75, lb 2, da 1, bn 1 |
 | Untertitel im Video | `out-youtube/film_untertitelt.mp4`, 32 MB, Bild geprüft |
 | Rechenweg | Whisper large-v3, pyannote 3.1, VoxLingua107, MADLAD-400-3B-MT auf der RTX 4060 |
@@ -53,10 +53,11 @@ Ein Bild aus dem fertigen Video bei Sekunde 20 zeigt den eingebrannten Untertite
    bit-genau deterministisch. **SPEC S11 („zwei Läufe gleich") gilt damit für den Kern mit
    Test-Adaptern, nicht für echte Modelle.** Das ist eine offene Abweichung vom SPEC und muss so
    benannt werden.
-3. **Keine Wahrheit zum Vergleich.** Ich habe keinen Referenztext und keine Sprecherliste. Ob S2
-   wirklich eine andere Person ist als S3, ob zwei Sprecher zusammengefasst wurden oder ein
-   Sprecher in zwei Kennungen zerfällt, kann ich **nicht** belegen. Die Zahl 5 ist ein Modell-
-   ergebnis, keine geprüfte Wahrheit.
+3. **Keine Wahrheit zum Vergleich — teilweise geklärt.** Ich habe keinen Referenztext und keine
+   Sprecherliste. **Der Auftraggeber hat am 2026-10-31 bestätigt: es waren tatsächlich 5
+   verschiedene Sprecher.** Die Anzahl stimmt damit. Nicht belegt ist weiter, **wer** welche
+   Zeile sagt: ob S1 bis S5 den richtigen Personen zugeordnet sind und ob die Sprecherwechsel
+   an der richtigen Stelle sitzen, ist nicht geprüft. Die Zuordnung bleibt ein Modellergebnis.
 4. **Musik und Geräusche** werden teils als Sprache segmentiert („Uh, uh, uh, uh.").
 
 ## 5. Drei Fehler, die dieser Test gefunden hat
