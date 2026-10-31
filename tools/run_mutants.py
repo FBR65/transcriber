@@ -186,6 +186,40 @@ MUTANTS: tuple[Mutant, ...] = (
         "            if False:",
     ),
     Mutant(
+        "Unfertiger Auftrag liefert trotzdem ein Transkript",
+        "src/transcriber/service.py",
+        (
+            "        if job.transcript is None:\n"
+            '            raise HTTPException(status_code=409, detail=f"job is {job.state}")\n'
+            "        return JSONResponse(job.transcript.to_dict())"
+        ),
+        "        return JSONResponse(job.transcript.to_dict() if job.transcript else {})",
+    ),
+    Mutant(
+        "Fremder Dateityp wird angenommen",
+        "src/transcriber/service.py",
+        "        if suffix not in SUFFIX_ALLOWED:",
+        "        if False:",
+    ),
+    Mutant(
+        "Löschen lässt den Auftrag stehen",
+        "src/transcriber/service.py",
+        "            self._jobs.pop(job_id, None)",
+        "            pass",
+    ),
+    Mutant(
+        "Unbekanntes Exportformat wird durchgelassen",
+        "src/transcriber/service.py",
+        "        if fmt not in EXPORTERS:",
+        "        if False:",
+    ),
+    Mutant(
+        "Dienst bindet an alle Adressen",
+        "src/transcriber/service.py",
+        'def serve(host: str = "127.0.0.1"',
+        'def serve(host: str = "0.0.0.0"',
+    ),
+    Mutant(
         "JSON-Export nicht sortiert",
         "src/transcriber/exporters.py",
         "text = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)",

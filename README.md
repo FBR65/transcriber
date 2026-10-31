@@ -43,6 +43,9 @@ Python 3.12 is pinned. The host Python 3.14 is not used because the ML wheels ta
 uv run transcriber transcribe audio.mp3 --target de --out out --format json --format srt
 uv run transcriber adapters
 uv run transcriber licenses
+uv run transcriber stream --source audio.wav --out out
+uv run transcriber serve --port 8000
+uv run transcriber render video.mp4 --transcript out/video.json --out out/video.mp4
 ```
 
 Messages are German by default. Add `--lang en` for English.

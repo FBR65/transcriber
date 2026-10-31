@@ -9,10 +9,12 @@ authors = [{ name = "Frank Reis" }]
 dependencies = [
     "accelerate>=1.15.0",
     "av<17",
+    "fastapi>=0.162.0",
     "faster-whisper>=1.2.1",
     "numpy>=2.5.4",
     "pyannote-audio<4",
     "pydantic>=2.9",
+    "python-multipart>=0.0.33",
     "sounddevice>=0.5.6",
     "soundfile>=0.14.0",
     "speechbrain>=1.1.2",
@@ -20,6 +22,7 @@ dependencies = [
     "torchaudio<2.9",
     "transformers>=5.21.0",
     "typer>=0.12",
+    "uvicorn[standard]>=0.54.0",
 ]
 
 [project.scripts]
@@ -35,6 +38,7 @@ dev = [
     "pytest-randomly>=3.15",
     "mypy>=1.11",
     "ruff>=0.6",
+    "httpx>=0.28.1",
 ]
 
 [build-system]
@@ -67,6 +71,7 @@ module = [
     "torch.*",
     "torchaudio.*",
     "transformers.*",
+    "uvicorn.*",
 ]
 ignore_missing_imports = true
 
@@ -80,5 +85,7 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 [tool.ruff.lint.per-file-ignores]
 # Typer braucht Funktionsaufrufe als Default (B008), das ist kein Fehler.
 "src/transcriber/cli.py" = ["B008"]
+# FastAPI braucht File(...) als Default, wie Typer (B008).
+"src/transcriber/service.py" = ["B008"]
 # SIM905 würde die Sprachliste in eine sehr lange Zeile zurückbauen (E501).
 "src/transcriber/adapters/mapping.py" = ["SIM905"]

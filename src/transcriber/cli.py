@@ -140,6 +140,18 @@ def licenses() -> None:
 
 
 @app.command()
+def serve(
+    host: str = typer.Option("127.0.0.1", "--host", help="Adresse. Ohne Angabe nur lokal."),
+    port: int = typer.Option(8000, "--port", help="Port."),
+    config: str | None = typer.Option(None, "--config", "-c", help="TOML-Konfiguration."),
+) -> None:
+    """Startet den HTTP-Dienst (SPEC Abschnitt 3.1)."""
+    from .service import serve as run_service
+
+    run_service(host=host, port=port, config_path=Path(config) if config else None)
+
+
+@app.command()
 def stream(
     source: str = typer.Option(..., "--source", "-s", help="Datei oder „mic“ für das Mikrofon."),
     target: list[str] = typer.Option(None, "--target", "-t", help="Zielsprache, mehrfach möglich."),
