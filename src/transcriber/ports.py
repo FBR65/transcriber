@@ -25,6 +25,21 @@ class SpeakerTurn:
     speaker: str
 
 
+@dataclass(frozen=True, slots=True)
+class VoiceprintMatch:
+    person_id: str
+    name: str
+    similarity: float
+
+
+@dataclass(frozen=True, slots=True)
+class PersonInfo:
+    person_id: str
+    name: str
+    created_at: str
+    samples: int
+
+
 @runtime_checkable
 class AsrEngine(Protocol):
     def transcribe(
@@ -58,3 +73,18 @@ class Exporter(Protocol):
     name: str
 
     def write(self, transcript: Transcript, path: Path) -> None: ...
+
+
+@runtime_checkable
+class Voiceprint(Protocol):
+    """Stimmabdruck-Galerie (SPEC Abschnitt 7). Anmeldung nur mit Zustimmung."""
+
+    def identify(self, path: Path, start_s: float, end_s: float) -> VoiceprintMatch | None: ...
+
+    def enroll(
+        self, path: Path, start_s: float, end_s: float, name: str, *, consent: bool
+    ) -> PersonInfo: ...
+
+    def delete(self, reference: str) -> int: ...
+
+    def people(self) -> list[PersonInfo]: ...

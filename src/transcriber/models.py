@@ -59,6 +59,7 @@ class RunConfig(BaseModel):
     language_id: str
     translator: str
     voiceprint: str | None = None
+    gallery: str | None = None
     target_languages: list[str] = Field(min_length=1)
 
 

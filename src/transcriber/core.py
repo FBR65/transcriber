@@ -59,6 +59,22 @@ def _normalize(labels: Sequence[str]) -> dict[str, str]:
     return mapping
 
 
+def speaker_windows(
+    turns: Sequence[Turn], limit: int = 3, minimum_s: float = 0.5
+) -> dict[str, list[tuple[float, float]]]:
+    """Die längsten Abschnitte je Sprecher. Kurze Abschnitte tragen wenig Stimmmerkmal."""
+    grouped: dict[str, list[tuple[float, float]]] = {}
+    for start, end, label in turns:
+        if end - start < minimum_s:
+            continue
+        grouped.setdefault(label, []).append((start, end))
+    result: dict[str, list[tuple[float, float]]] = {}
+    for label, windows in grouped.items():
+        ordered = sorted(windows, key=lambda window: window[1] - window[0], reverse=True)
+        result[label] = ordered[:limit]
+    return result
+
+
 def _drafts(
     raw: Sequence[Any],
     turns: Sequence[Turn],
@@ -127,8 +143,29 @@ def run_file(
         turns = [(0.0, source.duration_s, "S1")]
     mapping = _normalize([label for _, _, label in turns])
 
+    matches: dict[str, Any] = {}
+    gallery_size = 0
     if cfg.voiceprint:
-        reg.create("voiceprint", cfg.voiceprint)
+        options: dict[str, object] = {}
+        if cfg.gallery:
+            options["gallery"] = cfg.gallery
+        voiceprint = reg.create("voiceprint", cfg.voiceprint, **options)
+        try:
+            gallery_size = len(list(voiceprint.people()))
+            if gallery_size:
+                for label, spans in speaker_windows(turns).items():
+                    speaker_id = mapping.get(label, label)
+                    best = None
+                    for start, end in spans:
+                        match = voiceprint.identify(audio_path, start, end)
+                        if match is None:
+                            continue
+                        if best is None or match.similarity > best.similarity:
+                            best = match
+                    if best is not None:
+                        matches[speaker_id] = best
+        finally:
+            release(voiceprint)
 
     language_id = None
     needs_language_id = any(getattr(item, "language", None) is None for item in raw)
@@ -194,8 +231,12 @@ def run_file(
     speakers = [
         SpeakerInfo(
             id=speaker_id,
-            name=None,
-            voiceprint_match=None,
+            name=getattr(matches.get(speaker_id), "name", None),
+            voiceprint_match=(
+                round(float(matches[speaker_id].similarity), 3)
+                if speaker_id in matches
+                else None
+            ),
             speech_s=round(
                 sum(s.end_s - s.start_s for s in segments if s.speaker == speaker_id), 3
             ),
@@ -207,6 +248,8 @@ def run_file(
     warnings: list[str] = []
     if not segments:
         warnings.append(translate("warn.no_speech", lang))
+    elif gallery_size and len(matches) < len(order):
+        warnings.append(translate("warn.unknown_speaker", lang))
 
     return Transcript(
         created_at=datetime.now(UTC).replace(microsecond=0),

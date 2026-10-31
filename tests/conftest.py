@@ -84,6 +84,42 @@ ONE_SPEAKER = [AsrSegment(0.0, 2.0, "Hallo Welt", "de")]
 TURNS_TWO = [SpeakerTurn(0.0, 1.0, "S1"), SpeakerTurn(1.0, 2.0, "S2")]
 
 
+class FakeVoiceprint:
+    """Nimmt einen festen Vektor je Tonabschnitt. Die Galerie ist echt."""
+
+    def __init__(self, gallery: str | None = None, threshold: float = 0.70) -> None:
+        from transcriber.gallery import Gallery
+
+        self._gallery = Gallery(gallery, threshold=threshold)
+
+    def _embedding(self, path: Path, start_s: float, end_s: float) -> object:
+        import hashlib
+
+        digest = hashlib.sha256(f"{path.name}:{start_s:.2f}".encode()).digest()
+        values = [byte + 1 for byte in digest[:8]]
+        return [value / 1000.0 for value in values]
+
+    def identify(self, path: Path, start_s: float, end_s: float) -> object:
+        import numpy as np
+
+        return self._gallery.match(np.asarray(self._embedding(path, start_s, end_s)))
+
+    def enroll(
+        self, path: Path, start_s: float, end_s: float, name: str, *, consent: bool
+    ) -> object:
+        import numpy as np
+
+        return self._gallery.add(
+            name, np.asarray(self._embedding(path, start_s, end_s)), consent=consent
+        )
+
+    def delete(self, reference: str) -> int:
+        return self._gallery.delete(reference)
+
+    def people(self) -> list[object]:
+        return list(self._gallery.people())
+
+
 def register_fake_adapters(reg: Registry) -> None:
     reg.register("asr", "fake", lambda: FakeAsr(TWO_SPEAKERS))
     reg.register("asr", "single", lambda: FakeAsr(ONE_SPEAKER))
@@ -93,6 +129,7 @@ def register_fake_adapters(reg: Registry) -> None:
     reg.register("language_id", "fake", lambda: FakeLanguageId())
     reg.register("translator", "fake", lambda: FakeTranslator("translated"))
     reg.register("translator", "upper", lambda: FakeTranslator("upper"))
+    reg.register("voiceprint", "fake", FakeVoiceprint)
 
 
 @pytest.fixture(autouse=True)

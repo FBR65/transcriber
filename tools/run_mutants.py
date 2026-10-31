@@ -135,6 +135,39 @@ MUTANTS: tuple[Mutant, ...] = (
         "    return None",
     ),
     Mutant(
+        "Galerie ohne Zustimmung",
+        "src/transcriber/gallery.py",
+        "        if not consent:\n            raise GalleryConsentError(name)",
+        "        if False:\n            raise GalleryConsentError(name)",
+    ),
+    Mutant(
+        "Galerie-Treffer ohne Schwelle",
+        "src/transcriber/gallery.py",
+        "            if similarity < self.threshold:",
+        "            if False:",
+    ),
+    Mutant(
+        "Löschen lässt Stimmabdrücke stehen (äquivalent: ON DELETE CASCADE)",
+        "src/transcriber/gallery.py",
+        (
+            '                connection.execute('
+            '"DELETE FROM voiceprint WHERE person_id = ?", (person_id,))'
+        ),
+        "                pass",
+    ),
+    Mutant(
+        "Löschen ohne sicheres Überschreiben (äquivalent: VACUUM schreibt neu)",
+        "src/transcriber/gallery.py",
+        '        connection.execute("PRAGMA secure_delete = ON")',
+        "        pass",
+    ),
+    Mutant(
+        "Sperre beim Schreiben entfernt (äquivalent: UNIQUE-Index)",
+        "src/transcriber/gallery.py",
+        "fcntl.flock(handle.fileno(), fcntl.LOCK_EX if exclusive else fcntl.LOCK_SH)",
+        "pass",
+    ),
+    Mutant(
         "JSON-Export nicht sortiert",
         "src/transcriber/exporters.py",
         "text = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)",

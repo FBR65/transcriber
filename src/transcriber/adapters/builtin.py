@@ -281,7 +281,10 @@ class MadladTranslator:
 
 def register(registry: Registry) -> None:
     """Meldet die Standardadapter an. Wird über den Einstiegspunkt geladen."""
+    from .voiceprint import WeSpeakerVoiceprint
+
     registry.register("asr", "faster-whisper", WhisperAsr)
     registry.register("diarizer", "pyannote", PyannoteDiarizer)
     registry.register("language_id", "voxlingua", VoxLinguaLanguageId)
     registry.register("translator", "madlad", MadladTranslator)
+    registry.register("voiceprint", "wespeaker", WeSpeakerVoiceprint)

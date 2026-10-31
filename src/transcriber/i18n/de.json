@@ -5,6 +5,8 @@
   "error.audio_decode": "Audiodatei kann nicht gelesen werden: {path} ({detail})",
   "error.no_input": "Keine Eingabedatei angegeben.",
   "error.not_a_file": "Pfad ist keine Datei: {path}",
+  "error.gallery_consent": "Ohne Zustimmung wird kein Stimmabdruck gespeichert: {name}. Beim Anmelden den Schalter --consent setzen.",
+  "error.person_not_found": "Keine Person in der Galerie: {reference}",
   "warn.no_speech": "Keine Sprache erkannt. Das Transkript ist leer.",
   "warn.unknown_speaker": "Sprecher ohne Treffer in der Galerie bleibt ohne Namen.",
   "cli.written": "Geschrieben: {path}",
@@ -12,5 +14,11 @@
   "cli.failed": "Fehlgeschlagen: {path}: {message}",
   "cli.adapters": "Registrierte Adapter:",
   "cli.licenses": "Lizenzen der Standardmodelle:",
-  "cli.no_adapters": "Keine Adapter registriert."
+  "cli.no_adapters": "Keine Adapter registriert.",
+  "cli.enrolled": "Angemeldet: {name} ({person_id}), Stimmabdrücke: {samples}.",
+  "cli.deleted": "Gelöscht: {count} Person(en).",
+  "cli.gallery_list": "Personen in der Galerie: {count}",
+  "cli.gallery_row": "  {name} — {samples} Stimmabdruck/Stimmabdrücke, seit {created_at}",
+  "cli.gallery_empty": "Die Galerie ist leer.",
+  "cli.gallery_path": "Galerie: {path}"
 }

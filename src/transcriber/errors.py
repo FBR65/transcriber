@@ -60,3 +60,29 @@ class AudioDecodeError(TranscriberError):
 
     def params(self) -> dict[str, object]:
         return {"path": self.path, "detail": self.detail or "-"}
+
+
+class GalleryConsentError(TranscriberError):
+    """Ohne Zustimmung wird kein Stimmabdruck gespeichert (SPEC 7, S19)."""
+
+    key = "error.gallery_consent"
+    exit_code = 2
+
+    def __init__(self, name: str) -> None:
+        self.name = name
+        super().__init__(f"no consent for voiceprint of {name!r}")
+
+    def params(self) -> dict[str, object]:
+        return {"name": self.name}
+
+
+class PersonNotFoundError(TranscriberError):
+    key = "error.person_not_found"
+    exit_code = 2
+
+    def __init__(self, reference: str) -> None:
+        self.reference = reference
+        super().__init__(f"no person for {reference!r}")
+
+    def params(self) -> dict[str, object]:
+        return {"reference": self.reference}

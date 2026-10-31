@@ -35,12 +35,14 @@ class Registry:
     def has(self, port: str, name: str) -> bool:
         return name in self._factories.get(port, {})
 
-    def create(self, port: str, name: str) -> Any:
+    def create(self, port: str, name: str, **options: Any) -> Any:
         self.discover()
         try:
             factory = self._factories[port][name]
         except KeyError:
             raise UnknownAdapterError(port, name, self.names(port)) from None
+        if options:
+            return factory(**options)
         return factory()
 
     def discover(self, plugins: Iterable[Any] | None = None) -> None:

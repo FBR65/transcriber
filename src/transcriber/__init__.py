@@ -6,13 +6,27 @@ from .config import DEFAULT_ADAPTERS, Settings, load_settings
 from .core import run_file
 from .errors import (
     AudioDecodeError,
+    GalleryConsentError,
+    PersonNotFoundError,
     TranscriberError,
     UnknownAdapterError,
     UnsupportedLanguageError,
 )
 from .exporters import EXPORTERS, export
+from .gallery import Gallery, default_gallery_path
 from .models import RunConfig, Segment, Source, SpeakerInfo, Transcript
-from .ports import AsrEngine, AsrSegment, Diarizer, Exporter, LanguageId, SpeakerTurn, Translator
+from .ports import (
+    AsrEngine,
+    AsrSegment,
+    Diarizer,
+    Exporter,
+    LanguageId,
+    PersonInfo,
+    SpeakerTurn,
+    Translator,
+    Voiceprint,
+    VoiceprintMatch,
+)
 from .registry import DEFAULT_REGISTRY, Registry
 
 __all__ = [
@@ -24,7 +38,11 @@ __all__ = [
     "Diarizer",
     "EXPORTERS",
     "Exporter",
+    "Gallery",
+    "GalleryConsentError",
     "LanguageId",
+    "PersonInfo",
+    "PersonNotFoundError",
     "Registry",
     "RunConfig",
     "Segment",
@@ -37,6 +55,9 @@ __all__ = [
     "Translator",
     "UnknownAdapterError",
     "UnsupportedLanguageError",
+    "Voiceprint",
+    "VoiceprintMatch",
+    "default_gallery_path",
     "export",
     "load_settings",
     "run_file",

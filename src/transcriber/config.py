@@ -37,12 +37,17 @@ class Settings:
                 languages = [str(item) for item in raw_list]
         if not languages:
             languages = ["de"]
+        raw_gallery = data.get("gallery", {})
+        gallery: str | None = None
+        if isinstance(raw_gallery, dict) and raw_gallery.get("path"):
+            gallery = str(raw_gallery["path"])
         run = RunConfig(
             asr=adapters.get("asr", DEFAULT_ADAPTERS["asr"]),
             diarizer=adapters.get("diarizer", DEFAULT_ADAPTERS["diarizer"]),
             language_id=adapters.get("language_id", DEFAULT_ADAPTERS["language_id"]),
             translator=adapters.get("translator", DEFAULT_ADAPTERS["translator"]),
             voiceprint=adapters.get("voiceprint", DEFAULT_ADAPTERS["voiceprint"]) or None,
+            gallery=gallery,
             target_languages=languages,
         )
         return cls(run=run, lang=lang or "de")

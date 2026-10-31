@@ -5,6 +5,8 @@
   "error.audio_decode": "Cannot read audio file: {path} ({detail})",
   "error.no_input": "No input file given.",
   "error.not_a_file": "Path is not a file: {path}",
+  "error.gallery_consent": "No consent, so no voiceprint is stored: {name}. Pass --consent to enrol.",
+  "error.person_not_found": "No such person in the gallery: {reference}",
   "warn.no_speech": "No speech detected. The transcript is empty.",
   "warn.unknown_speaker": "A speaker without a gallery match is left unnamed.",
   "cli.written": "Written: {path}",
@@ -12,5 +14,11 @@
   "cli.failed": "Failed: {path}: {message}",
   "cli.adapters": "Registered adapters:",
   "cli.licenses": "Licenses of the default models:",
-  "cli.no_adapters": "No adapters registered."
+  "cli.no_adapters": "No adapters registered.",
+  "cli.enrolled": "Enrolled: {name} ({person_id}), voiceprints: {samples}.",
+  "cli.deleted": "Deleted: {count} person(s).",
+  "cli.gallery_list": "People in the gallery: {count}",
+  "cli.gallery_row": "  {name} — {samples} voiceprint(s), since {created_at}",
+  "cli.gallery_empty": "The gallery is empty.",
+  "cli.gallery_path": "Gallery: {path}"
 }

@@ -131,3 +131,43 @@ class _FixedDiarizer:
 
     def release(self) -> None:
         return None
+
+
+def test_voiceprint_gallery_roundtrip(sample: Path, tmp_path: Path) -> None:
+    """S16, S18 mit echtem Stimmabdruck-Modell und echter Galerie."""
+    import shutil
+    import subprocess
+
+    from transcriber.adapters.voiceprint import WeSpeakerVoiceprint
+
+    voiceprint = WeSpeakerVoiceprint(gallery=tmp_path / "gallery.db", threshold=0.5)
+    try:
+        person = voiceprint.enroll(sample, 0.5, 6.0, "JFK", consent=True)
+        assert person.samples == 1
+
+        same = voiceprint.identify(sample, 0.5, 5.0)
+        assert same is not None
+        assert same.name == "JFK"
+
+        # Fremde Stimme: derselbe Ton, deutlich verändert. Die Ähnlichkeit muss sinken.
+        shifted = tmp_path / "verschoben.wav"
+        ffmpeg = shutil.which("ffmpeg") or "ffmpeg"
+        subprocess.run(
+            [
+                ffmpeg, "-y", "-v", "error", "-i", str(sample),
+                "-af", "asetrate=16000*1.5,aresample=16000,atempo=0.667",
+                str(shifted),
+            ],
+            check=True,
+        )
+        other = voiceprint.identify(shifted, 0.5, 5.0)
+        other_similarity = other.similarity if other is not None else 0.0
+        assert other_similarity < same.similarity, (
+            f"veränderte Stimme zu ähnlich: {other_similarity:.2f} gegen {same.similarity:.2f}"
+        )
+
+        assert voiceprint.delete("JFK") == 1
+        assert voiceprint.identify(sample, 0.5, 5.0) is None
+        assert voiceprint.people() == []
+    finally:
+        voiceprint.release()
