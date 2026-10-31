@@ -38,15 +38,17 @@ class WhisperAsr:
 
         self._model = WhisperModel(model, device=device, compute_type=compute_type)
         self._beam_size = beam_size
+        self.last_language: str | None = None
 
     def transcribe(
         self, path: Path, options: Mapping[str, Any] | None = None
     ) -> Sequence[AsrSegment]:
         # Die Sprache je Abschnitt erkennt der Sprach-ID-Adapter; Whisper liefert nur eine
         # Sprache für die ganze Datei.
-        segments, _info = self._model.transcribe(
+        segments, info = self._model.transcribe(
             str(path), beam_size=self._beam_size, vad_filter=True
         )
+        self.last_language = info.language
         return segments_from_whisper(segments, None)
 
     def release(self) -> None:
@@ -205,8 +207,15 @@ class VoxLinguaLanguageId:
         if self._samples is None or self._samples_path != str(path):
             self._samples = load_mono_16k(path, self._sample_rate)
             self._samples_path = str(path)
+        # ECAPA braucht ein paar Zehntelsekunden Kontext. Sehr kurze Abschnitte werden
+        # nach beiden Seiten erweitert, sonst scheitert die Faltung an 3 Zeitfenstern.
+        minimum_s = 0.5
+        if end_s - start_s < minimum_s:
+            middle = (start_s + end_s) / 2
+            start_s = middle - minimum_s / 2
+            end_s = middle + minimum_s / 2
         chunk = slice_seconds(self._samples, start_s, end_s, self._sample_rate)
-        if chunk.size == 0:
+        if chunk.size < int(0.25 * self._sample_rate):
             return "und", 0.0
         waveform = torch.from_numpy(chunk).unsqueeze(0)
         _prob, score, _index, labels = self._classifier.classify_batch(waveform)

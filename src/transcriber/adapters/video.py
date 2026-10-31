@@ -85,7 +85,8 @@ class FfmpegVideoRenderer:
             subtitle_name = "untertitel.srt"
             subtitle_path = Path(workdir) / subtitle_name
             write_srt(transcript, subtitle_path, language=language)
-            command = self.build_command(video, subtitle_name, out.resolve())
+            # Absolut, weil ffmpeg im Arbeitsordner läuft (dort liegt die SRT).
+            command = self.build_command(video.resolve(), subtitle_name, out.resolve())
             completed = subprocess.run(
                 command, cwd=workdir, capture_output=True, text=True, check=False
             )

@@ -204,3 +204,39 @@ def test_voxlingua_adapter(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> N
     assert language == "he"
     assert 0.0 <= confidence <= 1.0
     language_id.release()
+
+
+def test_language_id_expands_very_short_windows(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Ein 0,04-s-Abschnitt darf die Faltung nicht sprengen."""
+    from .conftest import write_wav
+
+    audio = write_wav(tmp_path / "kurz.wav", seconds=2.0, rate=16000)
+    speechbrain = types.ModuleType("speechbrain")
+    inference = types.ModuleType("speechbrain.inference")
+    classifiers = types.ModuleType("speechbrain.inference.classifiers")
+    seen: dict[str, int] = {}
+
+    class FakeClassifier:
+        @classmethod
+        def from_hparams(cls, source: str, run_opts: object, savedir: object) -> FakeClassifier:
+            return cls()
+
+        def classify_batch(
+            self, waveform: object
+        ) -> tuple[object, list[float], object, list[str]]:
+            seen["samples"] = int(waveform.shape[1])
+            return None, [-0.1], None, ["de: German"]
+
+    classifiers.EncoderClassifier = FakeClassifier  # type: ignore[attr-defined]
+    speechbrain.inference = inference  # type: ignore[attr-defined]
+    inference.classifiers = classifiers  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "speechbrain", speechbrain)
+    monkeypatch.setitem(sys.modules, "speechbrain.inference", inference)
+    monkeypatch.setitem(sys.modules, "speechbrain.inference.classifiers", classifiers)
+
+    language_id = VoxLinguaLanguageId(device="cpu")
+    language, _confidence = language_id.detect(audio, 1.0, 1.04)
+    assert language == "de"
+    assert seen["samples"] >= 7000, f"zu kurz: {seen['samples']} Abtastwerte"

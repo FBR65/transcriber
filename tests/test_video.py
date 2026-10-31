@@ -170,3 +170,11 @@ def test_unknown_subtitle_language_is_reported(tmp_path: Path) -> None:
         FfmpegVideoRenderer().render(
             video, make_transcript(), tmp_path / "out.mp4", language="fr"
         )
+
+
+def test_render_works_with_a_relative_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """ffmpeg läuft im Arbeitsordner; ein relativer Videopfad darf nicht ins Leere zeigen."""
+    make_video(tmp_path / "relativ.mp4", seconds=1.5)
+    monkeypatch.chdir(tmp_path)
+    out = FfmpegVideoRenderer().render(Path("relativ.mp4"), make_transcript(), Path("aus.mp4"))
+    assert out.is_file() and out.stat().st_size > 0

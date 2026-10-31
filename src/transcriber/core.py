@@ -107,6 +107,48 @@ def _drafts(
     return drafts
 
 
+def smooth_languages(drafts: list[Draft], threshold: float = 0.5) -> None:
+    """Kurze, unsichere Abschnitte erben die Sprache des nächsten sicheren Abschnitts.
+
+    Die Sprach-ID ist auf kurzen, von Musik unterlegten Abschnitten unsicher. Ohne diese
+    Glättung bekommt ein deutscher Film zwanzig Sprachen.
+    """
+    confident = [
+        (draft.start_s, draft.end_s, draft.language)
+        for draft in drafts
+        if draft.language_confidence >= threshold and draft.language != "und"
+    ]
+    if not confident:
+        return
+    for draft in drafts:
+        if draft.language_confidence >= threshold and draft.language != "und":
+            continue
+        middle = (draft.start_s + draft.end_s) / 2
+        nearest = min(
+            confident,
+            key=lambda entry: 0.0
+            if entry[0] <= middle <= entry[1]
+            else min(abs(entry[0] - middle), abs(entry[1] - middle)),
+        )
+        draft.language = nearest[2]
+
+
+def apply_file_language(
+    drafts: list[Draft], file_language: str | None, maximum_s: float = 2.0
+) -> None:
+    """Kurze Abschnitte folgen der Sprache, die das ASR für die ganze Datei erkannt hat.
+
+    Die Sprach-ID verhört sich auf kurzen, von Musik unterlegten Abschnitten. Whisper hört
+    dagegen die ganze Datei und liegt dort robuster.
+    """
+    if not file_language:
+        return
+    for draft in drafts:
+        if draft.end_s - draft.start_s <= maximum_s and draft.language != file_language:
+            draft.language = file_language
+            draft.language_confidence = max(draft.language_confidence, 0.5)
+
+
 def release(adapter: object) -> None:
     """Gibt Speicher frei, wenn der Adapter das kann. Der Kern kennt kein ML."""
     hook = getattr(adapter, "release", None)
@@ -137,6 +179,7 @@ def run_file(
     asr = reg.create("asr", cfg.asr)
     try:
         raw = list(asr.transcribe(audio_path))
+        file_language = getattr(asr, "last_language", None)
     finally:
         release(asr)
 
@@ -186,6 +229,8 @@ def run_file(
     finally:
         if language_id is not None:
             release(language_id)
+    smooth_languages(drafts)
+    apply_file_language(drafts, file_language)
 
     translations: dict[int, dict[str, str]] = {draft.index: {} for draft in drafts}
     if drafts:
